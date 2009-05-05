@@ -1,0 +1,92 @@
+Some background:
+
+I've had an interest in transportation games for a long time. I've
+been working on small projects to explore some game ideas. In this
+directory you'll find the beginnings of a container port simulator.
+
+For a little more background on what led me to work on this, see this post:
+http://simblob.blogspot.com/2009/05/transport-tycoon-modular-airports.html
+
+Rough sketch:
+
+There are roads + trucks, railroads + trains, docks + ships, holding
+areas + cranes. In addition, there are containers that move among
+these four.  The basic operation of the port is that ships and trains
+come in and have destinations, and containers on those ships and
+trains have destinations, and you have to use trucks and cranes to
+move the containers around, and make sure the containers get on
+ships/trains with the same destination.
+
+Cranes move containers between stopped vehicles and a holding
+area. They cannot directly move containers between vehicles (for
+simplicity). The holding areas act as "buffers".
+
+There are an unlimited supply of local trucks. They only move around
+within the port area. The purpose of trucks (and roads) is to move
+containers between holding areas.  Note that in a real port, trucks
+are both used within the port and also to transport goods outside the
+port.  In this simulation, at least for now, I will only have local
+trucks and roads.  Non-local trucks and roads follow the same rules as
+trains, except they are shorter and have different graphics.
+
+I'm going to use a square grid. Each road, railroad, dock, or crane
+path is 1 grid space wide. Containers are 1x4 (or maybe 1x2).
+
+There are lots of unknowns: how do we decide when and how ships and
+trains come in? Can roads have more than one lane? Where do trucks
+come from and where do they go when we are done with them? How do
+containers get sorted? Do we even need a grid, or is it only used to
+make sure the static objects don't intersect? Do stations/docks
+automatically include the crane, holding area, another crane, and a
+road segment?
+
+Rough implementation:
+
+Static objects are those objects placed on the map: docks, train
+stations, truck loading areas, crane paths, holding areas.  These will
+have some description of themselves, plus a common export of (a) paths
+and (b) spaces.  The paths (list of splines) will describe how
+vehicles move and the spaces (set of grid locations) will describe
+what space is occupied.
+
+From the static objects we generate two reverse maps. The path_map
+maps grid edges to paths. Vehicles exiting one path will use the edge
+where it just exited to look up the next path it must follow. The
+grid_map maps grid spaces to objects. When objects are being placed,
+we can look at the grid_map to see if any other objects already occupy
+that space.  Another structure could replace grids for representing
+grid edges (where paths meet up) and grid spaces (where objects occupy
+space); that is something to ponder. These two reverse maps are
+entirely for performance, so we may not use them initially, we can
+rebuild them from the primary data structure, and for debugging we can
+run tests to make sure they match up.
+
+Paths have a beginning point/angle, end point/angle, and line segments
+approximating the spline. Each line segment has a length. The sum of
+these lengths is the length of the path. We use the length to
+represent positions (on a path of length L, a vehicle can have 0 <=
+position < L).  We need to map position to world location and
+orientation. If a vehicle follows a fixed speed, its position
+variable can be incremented by V*dt, and it will properly follow the
+path from 0 to L.
+
+Vehicles are trucks, trains, cranes, and ships. Vehicles may be linked
+together in a chain. Each car has a begin/end position on a path, as
+well as a length. Note that the beginning and ending of the car may be
+on separate paths. We have an invariant: begin + length = end, in path
+space. Undetermined: how do we represent chains of cars, including the
+gap between them? Undetermined: how do we represent speed and
+acceleration?
+
+Vehicles move from the end of the path to the beginning. This
+orientation is counterintuitive but the invariants seem easier to
+express this way. Position always decreases; when it becomes negative,
+we switch to the next path.
+
+Initial implementation:
+
+To start with, I'm going to implement roads and trucks only, and
+figure out the best way to represent these, move trucks along the
+road, have trucks not run into other trucks, and have trucks stop at
+loading areas. I think this is a reasonable first step.
+
