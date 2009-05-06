@@ -85,8 +85,17 @@ we switch to the next path.
 
 Initial implementation:
 
-To start with, I'm going to implement roads and trucks only, and
-figure out the best way to represent these, move trucks along the
-road, have trucks not run into other trucks, and have trucks stop at
-loading areas. I think this is a reasonable first step.
+To start with, I'm implementing roads and trucks only. A loop of roads
+defines the (1 dimensional) coordinate system, and the trucks have a
+begin/end position on that coordinate system.  Along each line
+segment, coordinates and distances work properly (e.g., position b is
+|b-a| distance from position a), but if the beginning and ending of
+the truck are on separate lines, then the distance |b-a| will be >=
+the distance between position b and position a. This discrepancy is
+minimized if the line segments are nearly collinear (e.g., no sharp
+turns), but it may be an issue at some point. An alternative may be to
+only move point a if it's too far from point b, but computing how much
+it needs to move might involve a little bit of geometry. I'm hoping it
+won't matter.
+
 
