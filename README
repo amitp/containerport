@@ -98,4 +98,8 @@ only move point a if it's too far from point b, but computing how much
 it needs to move might involve a little bit of geometry. I'm hoping it
 won't matter.
 
+References:
 
+Some of the papers at <http://www.d.umn.edu/~willemsn/> describe
+models for roads, vehicles, and intersections. In particular, see
+<http://www.d.umn.edu/~willemsn/pubs/vr2003_willemsen.pdf>. 

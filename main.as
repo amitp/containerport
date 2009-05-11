@@ -2,38 +2,50 @@ package {
   import flash.geom.*;
   import flash.display.*;
   import flash.events.*;
+  import flash.filters.*;
   
   public class main extends Sprite {
     public static var scale:Number = 10.0;
-    
+
+    public var junctions:Array = [];
     public var paths:Array = [];
     public var vehicles:Array = [];
+    public var pathsFromJunction:Object = {};
 
+    public var roadLayer:Sprite = new Sprite();
+    public var vehicleLayer:Sprite = new Sprite();
+    
     public function main() {
       addChild(new Debug(this));
-
+      addChild(roadLayer);
+      addChild(vehicleLayer);
+      vehicleLayer.filters = [new DropShadowFilter()];
+      
       var vertices:Array = [[2, 10], [3, 8], [4, 7],
                             [16, 5], [35, 12], [40, 15],
                             [41, 16], [42, 18], [41, 20],
                             [38, 21], [25, 22], [10, 22], [5, 20], [2, 15]];
 
       for (var i:int = 0; i < vertices.length; i++) {
-        var path:Path = new Path(i+1);
-        path.endPosition = new Point(vertices[i][0], vertices[i][1]);
-        paths.push(path);
+        junctions[i] = new Junction(i, vertices[i][0], vertices[i][1]);
+        pathsFromJunction[i] = [];
       }
+      
       for (i = 0; i < vertices.length; i++) {
-        var j:int = (i+1) % vertices.length;
-        paths[i].next = paths[j].id;
-        paths[i].beginPosition = paths[j].endPosition;
-        paths[i].length = paths[i].endPosition.subtract(paths[i].beginPosition).length;
+        var path:Path = new Path(i);
+        path.begin = junctions[(i+1) % vertices.length];
+        path.end = junctions[i];
+        paths.push(path);
+        pathsFromJunction[path.end.id].push(path);
       }
 
       vehicles = vehicles.concat(createTrain(1+vehicles.length, 1, 2));
-      vehicles = vehicles.concat(createTrain(1+vehicles.length, 6, 5));
+      vehicles = vehicles.concat(createTrain(1+vehicles.length, 8, 10));
       vehicles = vehicles.concat(createTrain(1+vehicles.length, 11, 3));
       
       addEventListener(Event.ENTER_FRAME, onEnterFrame);
+
+      drawRoads();
     }
 
     public function createTrain(startingId:int, pathId:int, cars:int):Array {
@@ -57,53 +69,46 @@ package {
     }
       
     public function onEnterFrame(e:Event):void {
-      graphics.beginFill(0x990000);
-      graphics.drawRect(0, 0, 10, 10);
-      graphics.endFill();
-
       for each (var v:Vehicle in vehicles) {
           moveVehicle(v, 0.1);
         }
-      draw();
+      drawVehicles();
     }
-    
-    public function draw():void {
-      graphics.clear();
 
-      graphics.beginFill(0x999900);
-      graphics.drawRect(0, 0, 10, 10);
-      graphics.endFill();
+    public function drawRoads():void {
+      roadLayer.graphics.clear();
       
       // Draw all paths
-      for each (var path:Path in paths) {
-          graphics.lineStyle(scale, 0x000000, 0.5);
-          graphics.moveTo(scale * path.beginPosition.x,
-                          scale * path.beginPosition.y);
-          graphics.lineTo(scale * path.endPosition.x,
-                          scale * path.endPosition.y);
-          graphics.lineStyle();
+      for each (var style:Array in [[1.8, 0xcccccc, 1.0], [1.0, 0x000000, 1.0], [0.9, 0x999999, 0.8], [0.0, 0xffffff, 0.1]]) {
+          roadLayer.graphics.lineStyle(scale * style[0], style[1], style[2]);
+          for each (var path:Path in paths) {
+              roadLayer.graphics.moveTo(scale * path.begin.p.x,
+                              scale * path.begin.p.y);
+              roadLayer.graphics.lineTo(scale * path.end.p.x,
+                              scale * path.end.p.y);
+            }
+          roadLayer.graphics.lineStyle();
         }
-
+      roadLayer.cacheAsBitmap = true;
+    }
+    
+    public function drawVehicles():void {
+      vehicleLayer.graphics.clear();
       // Draw all vehicles
       for each (var v:Vehicle in vehicles) {
           var p:Point;
-          graphics.lineStyle(scale*0.7, 0x77ffbb, 1.0, false, LineScaleMode.NORMAL, CapsStyle.NONE);
+          vehicleLayer.graphics.lineStyle(scale*0.7, 0x77ffbb, 1.0, false, LineScaleMode.NORMAL, CapsStyle.NONE);
           p = pathToPosition(v.begin);
-          graphics.moveTo(scale * p.x, scale * p.y);
+          vehicleLayer.graphics.moveTo(scale * p.x, scale * p.y);
           p = pathToPosition(v.end);
-          graphics.lineTo(scale * p.x, scale * p.y);
-          graphics.lineStyle();
+          vehicleLayer.graphics.lineTo(scale * p.x, scale * p.y);
+          vehicleLayer.graphics.lineStyle();
         }
-
-      graphics.beginFill(0x00ff00);
-      graphics.drawRect(0, 0, 10, 10);
-      graphics.endFill();
     }
 
     public function pathToPosition(pos:PathPosition):Point {
       var path:Path = lookupPath(pos.path);
-      var p:Point = Point.interpolate(path.endPosition,
-                                      path.beginPosition,
+      var p:Point = Point.interpolate(path.end.p, path.begin.p,
                                       pos.position / path.length);
       return p;
     }
@@ -123,7 +128,7 @@ package {
         p.position -= d;
         while (p.position < 0.0) {
           var oldPath:Path = lookupPath(p.path);
-          var newPath:Path = lookupPath(oldPath.next);
+          var newPath:Path = pathsFromJunction[oldPath.begin.id][0];
           p.path = newPath.id;
           p.position += newPath.length;
         }
