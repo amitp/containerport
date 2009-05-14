@@ -26,9 +26,27 @@ package {
                             [41, 16], [42, 18], [41, 20],
                             [38, 21], [25, 22], [10, 22], [5, 20], [2, 15]];
 
+      var draggableJunctions:Array = [];
+
+      function updateRoads():void {
+        for (var i:int = 0; i < vertices.length; i++) {
+          junctions[i].p.x = draggableJunctions[i].x / scale;
+          junctions[i].p.y = draggableJunctions[i].y / scale;
+        }
+      }
+      
       for (var i:int = 0; i < vertices.length; i++) {
         junctions[i] = new Junction(i, vertices[i][0], vertices[i][1]);
         pathsFromJunction[i] = [];
+        
+        var drag:DraggableJunction = new DraggableJunction(function ():void {
+            updateRoads();
+            drawRoads();
+          });
+        drag.x = junctions[i].p.x * scale;
+        drag.y = junctions[i].p.y * scale;
+        draggableJunctions.push(drag);
+        addChild(drag);
       }
       
       for (i = 0; i < vertices.length; i++) {
