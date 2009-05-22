@@ -103,3 +103,16 @@ References:
 Some of the papers at <http://www.d.umn.edu/~willemsn/> describe
 models for roads, vehicles, and intersections. In particular, see
 <http://www.d.umn.edu/~willemsn/pubs/vr2003_willemsen.pdf>. 
+
+One of the open issues is that we need to follow a constant speed
+along a curved path. The above paper does this by mapping x,y,z back
+onto the road coordinate system.  An alternate approach is in
+<http://www.cs.uiowa.edu/~kearney/pubs/CurvesAndSurfacesArcLength.pdf>. Given
+that Flash doesn't support cubic splines, it's likely I'll have to
+convert the road into a series of short line segments anyway, and in
+that case, I'll use those line segments for the coordinate system
+instead of the far more complicated mathematics for arc length along
+curves.
+
+There are some Flash animations of intersections (mostly roundabouts)
+here: <http://www.alaskaroundabouts.com/Dowling/>
