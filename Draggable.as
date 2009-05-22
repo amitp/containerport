@@ -3,7 +3,9 @@
 // This code properly handles scaling and translation of the parent
 // sprite, and should handle other matrix transformations as well. It
 // may not handle the parent sprite changing its transformations
-// *during* a drag operation though.
+// *during* a drag operation though. To use a drag handle to alter a
+// sprite, make the handle a sibling of the sprite instead of its
+// child.
 
 // The caller should have a value that is being tracked by the
 // draggable; there must be a function to map the underlying value to
@@ -12,6 +14,9 @@
 // encapsulated into a DragConstraint object.  The DragConstraint
 // class also provides some convenient factory functions for common
 // constraint types.
+
+// The Draggable sprite does *not* automatically update if you change
+// the underlying value elsewhere. Call updateFromValue() explicitly.
 
 package {
   import flash.display.*;
@@ -24,10 +29,13 @@ package {
     // not dragging. We need this to track the difference between
     // where you clicked on the handle and the center of the
     // handle. For example, if you pick up the handle from the edge,
-    // the value of 'dragging' will be that edge position.
+    // the value of 'dragging' will be that edge position, in global
+    // coordinates.
     public var dragging:Point = null;
 
-    // The mapping to and from the underlying value ("model")
+    // The mapping to and from the underlying value ("model"). This
+    // can be changed at any time; call updateFromValue() to update
+    // the drag handle position.
     public var constraint:DragConstraint;
 
     public var draggingFilters:Array =
@@ -53,12 +61,11 @@ package {
 
     // Begin a drag operation
     public function onMouseDown(e:MouseEvent):void {
-      // The mouse down handler is on the Draggable sprite, and we
-      // want to drag relative to its parent, so we change from local
-      // to parent's coordinates.
-      var p:Point = new Point(e.localX, e.localY);
-      p = parent.globalToLocal(localToGlobal(p));
-      dragging = new Point(x - p.x, y - p.y);
+      // Calculate the relative position between the center of the
+      // drag handle and the mouse down point, in global
+      // coordinates. We will preserve that during the drag operation.
+      var p:Point = parent.localToGlobal(new Point(x, y));
+      dragging = localToGlobal(new Point(e.localX, e.localY)).subtract(p);
       
       filters = draggingFilters;
       alpha = 1.0;
@@ -80,12 +87,14 @@ package {
     // Track mouse movement (only active while dragging)
     public function onMouseDrag(e:MouseEvent):void {
       // The mouse move handler is on the stage, so we need to convert
-      // from stage coordinates to the parent sprite's coordinates.
+      // from stage coordinates to the parent sprite's coordinates,
+      // adjusting for the drag point while in global coordinates.
       var p:Point = new Point(e.stageX, e.stageY);
-      p = parent.globalToLocal(stage.localToGlobal(p));
+      p = stage.localToGlobal(p).subtract(dragging);
+      p = parent.globalToLocal(p);
 
       // Update the underlying value, then update the position based on that
-      constraint.toValue(dragging.add(p));
+      constraint.toValue(p);
       updateFromValue();
     }
 
