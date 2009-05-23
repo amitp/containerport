@@ -1,4 +1,17 @@
-// Generic draggable object.
+// Generic draggable handle that controls some value. This class acts
+// as the controller and view for some model value.
+
+// There are four things to track while dragging:
+//   1. Where you "picked up" the drag handle [this.dragging:Point]
+//   2. Where your mouse pointer is now [event:MouseEvent]
+//   3. What the underlying value is [constraint:DragConstraint]
+//   4. Where the drag handle is [sprite's x,y]
+
+// The algorithm: Controller: use the desired drag handle position
+// (computed from 1 and 2) to update the underlying value, imposing
+// any constraints (snapping, etc.).  Viewer: use the underlying value
+// to compute a drag handle position.  Both of these functions are in
+// the DragConstraint.
 
 // This code properly handles scaling and translation of the parent
 // sprite, and should handle other matrix transformations as well. It
@@ -7,16 +20,23 @@
 // sprite, make the handle a sibling of the sprite instead of its
 // child.
 
-// The caller should have a value that is being tracked by the
-// draggable; there must be a function to map the underlying value to
-// the draggable's position, and vice versa.  Snapping and constraints
-// can be expressed via these functions.  These functions are
-// encapsulated into a DragConstraint object.  The DragConstraint
-// class also provides some convenient factory functions for common
-// constraint types.
-
 // The Draggable sprite does *not* automatically update if you change
 // the underlying value elsewhere. Call updateFromValue() explicitly.
+
+// Enhancements that might be nice:
+//   1. Separate sprites for normal, hover, and dragging states.
+//   2. Refactoring of DragConstraint into chains of adapters. For
+//      example, instead of the Integer constraint that maps points to
+//      integer positions along a vector, the Draggable could
+//      export/expect a Point, the next adapter could transform the Point
+//      into a Number, the next adapter could apply min/max, and the next
+//      adapter could round that to the nearest integer. These smaller
+//      adapters could be combined in other useful ways.
+//   3. Use Actionscript setters and getters for the DragConstraint. The
+//      setter would update the underlying value and the getter would map
+//      the underlying value into the point.
+//   4. The refactored DragConstraints would then be independent of Draggable
+//      and could be used elsewhere.
 
 package {
   import flash.display.*;
