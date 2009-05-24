@@ -21,22 +21,14 @@
 // child.
 
 // The Draggable sprite does *not* automatically update if you change
-// the underlying value elsewhere. Call updateFromValue() explicitly.
+// the underlying value elsewhere (there is no Observer pattern
+// implemented here, using [Bindable]). Call updateFromValue()
+// explicitly.
 
 // Enhancements that might be nice:
 //   1. Separate sprites for normal, hover, and dragging states.
-//   2. Refactoring of DragConstraint into chains of adapters. For
-//      example, instead of the Integer constraint that maps points to
-//      integer positions along a vector, the Draggable could
-//      export/expect a Point, the next adapter could transform the Point
-//      into a Number, the next adapter could apply min/max, and the next
-//      adapter could round that to the nearest integer. These smaller
-//      adapters could be combined in other useful ways.
-//   3. Use Actionscript setters and getters for the DragConstraint. The
-//      setter would update the underlying value and the getter would map
-//      the underlying value into the point.
-//   4. The refactored DragConstraints would then be independent of Draggable
-//      and could be used elsewhere.
+//   2. Control over the filters and alpha used in the normal, hover, and dragging states
+//   3. Figure out whether [Bindable] would work with Model.reference and other models.
 
 package {
   import flash.display.*;
@@ -56,13 +48,13 @@ package {
     // The mapping to and from the underlying value ("model"). This
     // can be changed at any time; call updateFromValue() to update
     // the drag handle position.
-    public var constraint:DragConstraint;
+    public var model:Model;
 
     public var draggingFilters:Array =
       [new GlowFilter(0xccffcc), new DropShadowFilter()];
     
-    public function Draggable(constraint:DragConstraint) {
-      this.constraint = constraint;
+    public function Draggable(model:Model) {
+      this.model = model;
       updateFromValue();
 
       addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
@@ -114,13 +106,13 @@ package {
       p = parent.globalToLocal(p);
 
       // Update the underlying value, then update the position based on that
-      constraint.toValue(p);
+      model.value = p;
       updateFromValue();
     }
 
     // Set the Draggable Sprite's position based on the underlying value
     public function updateFromValue():void {
-      var p:Point = constraint.fromValue();
+      var p:Point = model.value;
       x = p.x;
       y = p.y;
     }
