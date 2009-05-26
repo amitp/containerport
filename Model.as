@@ -113,11 +113,23 @@ package {
                        );
     }
 
+    // Adapter: also call a callback after value is set
+    public function callback(callback:Function):Model {
+      var that:Model = this;
+      return new Model(
+                       function():* { return that.value; },
+                       function(v:*):void {
+                         that.value = v;
+                         callback();
+                       }
+                       );
+    }
+    
     // Binary adapter: Cartesian coordinates
     public static function Cartesian(x:Model, y:Model):Model {
       return new Model(
                        function():Point {
-                         return Point.polar(x.value, y.value);
+                         return new Point(x.value, y.value);
                        },
                        function(value:Point):void {
                          x.value = value.x;
