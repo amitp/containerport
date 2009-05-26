@@ -28,23 +28,14 @@ package {
 
       var draggableJunctions:Array = [];
 
-      function updateRoads():void {
-        for (var i:int = 0; i < vertices.length; i++) {
-          junctions[i].p.x = draggableJunctions[i].x / scale;
-          junctions[i].p.y = draggableJunctions[i].y / scale;
-        }
-      }
-      
       for (var i:int = 0; i < vertices.length; i++) {
         junctions[i] = new Junction(i, vertices[i][0], vertices[i][1]);
         pathsFromJunction[i] = [];
         
-        var drag:DraggableJunction = new DraggableJunction(function ():void {
-            updateRoads();
-            drawRoads();
-          });
-        drag.x = junctions[i].p.x * scale;
-        drag.y = junctions[i].p.y * scale;
+        var drag:Draggable = new Draggable
+          (Model.Cartesian(Model.ref(junctions[i].p, 'x').multiply(scale),
+                           Model.ref(junctions[i].p, 'y').multiply(scale))
+           .callback(drawRoads));
         draggableJunctions.push(drag);
         addChild(drag);
       }
