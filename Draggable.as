@@ -25,10 +25,12 @@
 // implemented here, using [Bindable]). Call updateFromValue()
 // explicitly.
 
+// To change the graphics, you can either draw into the normalShape,
+// hoverShape, draggingShape shape objects, or you can make a subclass
+// that overrides draw().
+
 // Enhancements that might be nice:
-//   1. Separate sprites for normal, hover, and dragging states.
-//   2. Control over the filters and alpha used in the normal, hover, and dragging states
-//   3. Figure out whether [Bindable] would work with Model.reference and other models.
+//   1. Figure out whether [Bindable] would work with Model.reference and other models.
 
 package {
   import flash.display.*;
@@ -44,14 +46,16 @@ package {
     // the value of 'dragging' will be that edge position, in global
     // coordinates.
     public var dragging:Point = null;
-
+    public var hovering:Boolean = false;
+    
     // The mapping to and from the underlying value ("model"). This
     // can be changed at any time; call updateFromValue() to update
     // the drag handle position.
     public var model:Model;
 
-    public var draggingFilters:Array =
-      [new GlowFilter(0xccffcc), new DropShadowFilter()];
+    public var normalShape:Shape = new Shape();
+    public var hoverShape:Shape = new Shape();
+    public var draggingShape:Shape = new Shape();
     
     public function Draggable(model:Model) {
       this.model = model;
@@ -61,16 +65,42 @@ package {
       addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
       addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 
-      // TODO: better way to decide on alpha
-      alpha = 0.5;
+      hoverShape.visible = false;
+      draggingShape.visible = false;
 
-      // TODO: what about other shapes? What about changing shapes
-      // during dragging or mouseover?
-      graphics.beginFill(0xccff66);
-      graphics.drawCircle(0, 0, 10);
-      graphics.endFill();
+      addChild(normalShape);
+      addChild(hoverShape);
+      addChild(draggingShape);
+      
+      draw();
     }
 
+    // Draw the drag handle onto the three shape objects
+    public function draw():void {
+      normalShape.alpha = 0.5;
+      normalShape.graphics.beginFill(0xddeeee);
+      normalShape.graphics.drawCircle(0, 0, 7);
+      normalShape.graphics.endFill();
+      normalShape.filters = [new BevelFilter(2)];
+
+      hoverShape.graphics.beginFill(0xffffcc);
+      hoverShape.graphics.drawCircle(0, 0, 8);
+      hoverShape.graphics.endFill();
+      hoverShape.filters = [new BevelFilter(2), new GlowFilter(0xff0000, 0.0, 2, 2, 1)];
+
+      draggingShape.graphics.beginFill(0x77ff77);
+      draggingShape.graphics.drawCircle(0, 0, 7);
+      draggingShape.graphics.endFill();
+      draggingShape.filters = [new BevelFilter(2), new DropShadowFilter()];
+    }
+
+    // Set the visibility of the layers
+    public function setVisibility():void {
+      normalShape.visible = !dragging && !hovering;
+      hoverShape.visible = hovering && !dragging;
+      draggingShape.visible = !!dragging;
+    }
+    
     // Begin a drag operation
     public function onMouseDown(e:MouseEvent):void {
       // Calculate the relative position between the center of the
@@ -78,10 +108,8 @@ package {
       // coordinates. We will preserve that during the drag operation.
       var p:Point = parent.localToGlobal(new Point(x, y));
       dragging = localToGlobal(new Point(e.localX, e.localY)).subtract(p);
+      setVisibility();
       
-      filters = draggingFilters;
-      alpha = 1.0;
-
       // While dragging we "capture" the mouse by tracking it on the stage
       stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseDrag);
       stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
@@ -90,8 +118,8 @@ package {
     // End a drag operation (only active while dragging)
     public function onMouseUp(e:MouseEvent):void {
       dragging = null;
-      filters = [];
-      alpha = 0.5;
+      setVisibility();
+      
       stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseDrag);
       stage.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
     }
@@ -119,17 +147,13 @@ package {
 
     // TODO: Generalize mouse hover effect
     public function onMouseOver(e:MouseEvent):void {
-      if (!dragging) {
-        alpha = 1.0;
-        filters = [new DropShadowFilter()];
-      }
+      hovering = true;
+      setVisibility();
     }
     
     public function onMouseOut(e:MouseEvent):void {
-      if (!dragging) {
-        alpha = 0.5;
-        filters = [];
-      }
+      hovering = false;
+      setVisibility();
     }
     
   }
