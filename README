@@ -116,3 +116,22 @@ curves.
 
 There are some Flash animations of intersections (mostly roundabouts)
 here: <http://www.alaskaroundabouts.com/Dowling/>
+
+It'd be nice if we could offset the quadratic spline to make a
+quadratic spline for each lane of the road. However,
+[Wikipedia](http://en.wikipedia.org/wiki/B%C3%A9zier_curve) says no:
+
+    The curve at a fixed offset from a given Bézier curve, often
+    called an offset curve (lying "parallel" to the original curve,
+    like the offset between rails in a railroad track), cannot be
+    exactly formed by a Bézier curve (except in some trivial
+    cases). However, there are heuristic methods that usually give an
+    adequate approximation for practical purposes.
+
+Finding intersections of the curves is also hard.
+
+There are also approximations of cubics using quadratics:
+<http://timotheegroleau.com/Flash/articles/cubic_bezier_in_flash.htm>
+
+Bezier “easing” happens to be what we need for moving along a curve at
+a constant rate. <http://www.algorithmist.net/beziereasing.html>
