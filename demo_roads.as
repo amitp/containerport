@@ -2,64 +2,73 @@ package {
   import flash.geom.*;
   import flash.display.*;
   
-  public class roaddemo extends Sprite {
-    public var c0:Point = new Point(40, 120);
-    public var c1:Point = new Point(90, 110);
-    public var c2:Point = new Point(120, 118);
-    public var c3:Point = new Point(150, 130);
-    public var c4:Point = new Point(170, 140);
+  public class demo_roads extends Sprite {
 
-    public var roadLayer:Shape = new Shape();
+    public var b0:Point = Point.polar(100, Math.PI);
+    public var b1:Point = Point.polar(150, Math.PI*2/3);
+    public var b2:Point = Point.polar(100, Math.PI/3);
     
-    public function roaddemo() {
-      addChild(new Debug(this));
-      addChild(roadLayer);
+    public var c0:Point = new Point(20, 105);
+    public var c1:Point = new Point(90, 110);
+    public var c2:Point = new Point(120, 120);
+    public var c3:Point = new Point(180, 140);
+    public var c4:Point = new Point(170, 240);
 
-      var c:Point = new Point(100, 100);
-      c0 = c.add(Point.polar(50, Math.PI));
-      c2 = c.add(Point.polar(50, Math.PI*3/4));
-      c4 = c.add(Point.polar(50, Math.PI/2));
-      roadLayer.y = 200;
-      for each (var p:Point in [c0, c1, c2, c3, c4]) {
-          addChild(new Draggable(
+    public function demo_roads() {
+      addChild(new Debug(this));
+
+      var c:Point = new Point(300, 100);
+      b0 = b0.add(c);
+      b1 = b1.add(c);
+      b2 = b2.add(c);
+
+      for each (var p:Point in [c0, c1, c2, c3, c4, b0, b1, b2]) {
+          var draggable:Draggable =
+                   new Draggable(
                                  Model.Cartesian(Model.ref(p, 'x'),
                                                  Model.ref(p, 'y'))
-                                 .callback(drawTestLanes)));
+                                 .callback(redraw));
+          draggable.normalShape.alpha = 0.9;
+          with (draggable.normalShape.graphics) {
+            clear();
+            lineStyle(1, 0x000000);
+            beginFill(0xffffff);
+            drawCircle(0, 0, 3);
+            endFill();
+            lineStyle();
+          }
+          addChild(draggable);
         }
-      drawTestLanes();
+      redraw();
     }
 
-    public function drawTestLanes():void {
+    public function redraw():void {
       graphics.clear();
-      roadLayer.graphics.clear();
-      drawTestRoadSegment(roadLayer.graphics, c0, c1, c2, 2, 2, 3, 2);
-      drawTestRoadSegment(roadLayer.graphics, c2, c3, c4, 3, 2, 3, 2);
+      drawTestRoadSegment(graphics, c0, c1, c2, 2, 2, 3, 2);
+      drawTestRoadSegment(graphics, c2, c3, c4, 3, 2, 3, 2);
 
       graphics.lineStyle(1, 0xbb6600);
-      graphics.drawCircle(100, 100, 50);
+      graphics.drawCircle(300, 100, 100);
       graphics.lineStyle(1, 0x669900);
-      graphics.moveTo(c0.x, c0.y);
-      graphics.lineTo(c1.x, c1.y);
-      graphics.lineTo(c2.x, c2.y);
-      graphics.lineTo(c3.x, c3.y);
-      graphics.lineTo(c4.x, c4.y);
+      graphics.moveTo(b0.x, b0.y);
+      graphics.lineTo(b1.x, b1.y);
+      graphics.lineTo(b2.x, b2.y);
       graphics.lineStyle(1, 0x0066bb, 0.5);
-      graphics.moveTo(c0.x, c0.y);
-      graphics.curveTo(c1.x, c1.y, c2.x, c2.y);
-      graphics.curveTo(c3.x, c3.y, c4.x, c4.y);
-      var c0b:Point = Point.interpolate(c0, c1, 0.5);
-      var c1b:Point = Point.interpolate(c1, c2, 0.5);
-      var c1alt:Point = Point.interpolate(c0b, c1b, 0.5);
+      graphics.moveTo(b0.x, b0.y);
+      graphics.curveTo(b1.x, b1.y, b2.x, b2.y);
+      var b0b:Point = Point.interpolate(b0, b1, 0.5);
+      var b1b:Point = Point.interpolate(b1, b2, 0.5);
+      var b1alt:Point = Point.interpolate(b0b, b1b, 0.5);
       graphics.lineStyle(0, 0xffffff, 0.5);
-      graphics.moveTo(c0.x, c0.y);
-      graphics.lineTo(c0b.x, c0b.y);
-      graphics.lineTo(c1alt.x, c1alt.y);
-      graphics.lineTo(c1b.x, c1b.y);
-      graphics.lineTo(c2.x, c2.y);
+      graphics.moveTo(b0.x, b0.y);
+      graphics.lineTo(b0b.x, b0b.y);
+      graphics.lineTo(b1alt.x, b1alt.y);
+      graphics.lineTo(b1b.x, b1b.y);
+      graphics.lineTo(b2.x, b2.y);
       graphics.lineStyle(0, 0x000000, 0.5);
-      graphics.moveTo(c0.x, c0.y);
-      graphics.curveTo(c0b.x, c0b.y, c1alt.x, c1alt.y);
-      graphics.curveTo(c1b.x, c1b.y, c2.x, c2.y);
+      graphics.moveTo(b0.x, b0.y);
+      graphics.curveTo(b0b.x, b0b.y, b1alt.x, b1alt.y);
+      graphics.curveTo(b1b.x, b1b.y, b2.x, b2.y);
       graphics.lineStyle();
     }
 
