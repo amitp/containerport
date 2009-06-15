@@ -29,7 +29,7 @@ package {
       b2 = b2.add(c);
 
       addChild(new Draggable(Model.Cartesian(Model.ref(this, 'ak')
-                                             .clamped(10, 500)
+                                             .clamped(10, 200)
                                              .add(300),
                                              Model.constant(20))
                              .callback(redraw)));
@@ -65,9 +65,18 @@ package {
 
     public function redraw():void {
       graphics.clear();
+
+      // Draw a slider base for the arc size slider
+      graphics.lineStyle(5, 0x777777);
+      graphics.moveTo(300, 20);
+      graphics.lineTo(500, 20);
+      graphics.lineStyle();
+
+      // Draw the Bezier curve road
       drawTestRoadSegment(graphics, c0, c1, c2, 2, 2, 3, 2);
       drawTestRoadSegment(graphics, c2, c3, c4, 3, 2, 3, 2);
 
+      // Draw a circle and a Bezier curve approximating it
       graphics.lineStyle(1, 0xbb6600);
       graphics.drawCircle(150, 100, 100);
       graphics.lineStyle(1, 0x669900);
@@ -92,6 +101,7 @@ package {
       graphics.curveTo(b1b.x, b1b.y, b2.x, b2.y);
       graphics.lineStyle();
 
+      // Draw a road that uses a circular arc to join straight segments
       var a10:Point = a0.subtract(a1); a10.normalize(1);
       var a12:Point = a2.subtract(a1); a12.normalize(1);
       var p:Point = V.intersection
