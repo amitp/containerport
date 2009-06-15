@@ -66,6 +66,11 @@ package {
     public function redraw():void {
       graphics.clear();
 
+      // Draw a background
+      graphics.beginFill(0xbbbb99);
+      graphics.drawRect(-1000, -1000, 2000, 2000);
+      graphics.endFill();
+      
       // Draw a slider base for the arc size slider
       graphics.lineStyle(5, 0x777777);
       graphics.moveTo(300, 20);
@@ -112,12 +117,6 @@ package {
       var p2:Point = V.intersection(a1, a12, p, V.right(a12));
       var lanes:int = 2;
       
-      graphics.lineStyle(20, 0x000000, 0.5);
-      graphics.moveTo(a0.x, a0.y);
-      graphics.lineTo(p1.x, p1.y);
-      graphics.curveTo(a1.x, a1.y, p2.x, p2.y);
-      graphics.lineTo(a2.x, a2.y);
-      graphics.lineStyle();
       drawTestRoadSegment(graphics, a0, Point.interpolate(a0, p1, 0.5), p1, lanes, lanes, lanes, lanes);
       drawTestRoadSegment(graphics, p1, a1, p2, lanes, lanes, lanes, lanes);
       drawTestRoadSegment(graphics, p2, Point.interpolate(p2, a2, 0.5), a2, lanes, lanes, lanes, lanes);
