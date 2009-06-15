@@ -22,46 +22,46 @@ package {
       for (var i:int = 0; i < approaches.length; i++) {
         var p:Point, v:Point;
 
-        p = scale(dir[i], 40);
-        v = left(dir[i]);
+        p = V.scale(dir[i], 40);
+        v = V.left(dir[i]);
         graphics.beginFill(0x000000);
-        drawPath([p, p.add(scale(dir[i], 100)),
-                  p.add(scale(dir[i], 100)).add(scale(v, 10*approaches[i].inLanes)),
-                  p.add(scale(v, 10*approaches[i].inLanes))]);
+        drawPath([p, p.add(V.scale(dir[i], 100)),
+                  p.add(V.scale(dir[i], 100)).add(V.scale(v, 10*approaches[i].inLanes)),
+                  p.add(V.scale(v, 10*approaches[i].inLanes))]);
         graphics.endFill();
                         
         for (var lane:int = 0; lane < approaches[i].inLanes; lane++) {
           if (lane != 0)
-            drawLane(p.add(scale(v, 10*lane)), dir[i], 0xffffff, true);
+            drawLane(p.add(V.scale(v, 10*lane)), dir[i], 0xffffff, true);
           if (lane == 0)
-            drawLane(p.add(scale(v, 10*lane+1)), dir[i], 0xffff00, false);
+            drawLane(p.add(V.scale(v, 10*lane+1)), dir[i], 0xffff00, false);
           if (lane == approaches[i].inLanes-1)
-            drawLane(p.add(scale(v, 10*lane+9)), dir[i], 0xffffff, false);
+            drawLane(p.add(V.scale(v, 10*lane+9)), dir[i], 0xffffff, false);
         }
 
         graphics.lineStyle(1, 0xffffff, 1.0, false, LineScaleMode.NORMAL, CapsStyle.NONE);
-        drawPath([p, p.add(scale(v, 10*approaches[i].inLanes - 1))]);
+        drawPath([p, p.add(V.scale(v, 10*approaches[i].inLanes - 1))]);
         graphics.lineStyle();
         
-        intersectionBoundary.push(p.add(scale(v, 10*approaches[i].inLanes-1)));
+        intersectionBoundary.push(p.add(V.scale(v, 10*approaches[i].inLanes-1)));
 
-        p = scale(dir[i], 40);
-        v = right(dir[i]);
+        p = V.scale(dir[i], 40);
+        v = V.right(dir[i]);
         graphics.beginFill(0x000000);
-        drawPath([p, p.add(scale(dir[i], 100)),
-                  p.add(scale(dir[i], 100)).add(scale(v, 10*approaches[i].outLanes)),
-                  p.add(scale(v, 10*approaches[i].outLanes))]);
+        drawPath([p, p.add(V.scale(dir[i], 100)),
+                  p.add(V.scale(dir[i], 100)).add(V.scale(v, 10*approaches[i].outLanes)),
+                  p.add(V.scale(v, 10*approaches[i].outLanes))]);
         graphics.endFill();
         for (lane = 0; lane < approaches[i].outLanes; lane++) {
           if (lane != 0)
-            drawLane(p.add(scale(v, 10*lane)), dir[i], 0xffffff, true);
+            drawLane(p.add(V.scale(v, 10*lane)), dir[i], 0xffffff, true);
           if (lane == 0)
-            drawLane(p.add(scale(v, 10*lane+1)), dir[i], 0xffff00, false);
+            drawLane(p.add(V.scale(v, 10*lane+1)), dir[i], 0xffff00, false);
           if (lane == approaches[i].outLanes-1)
-            drawLane(p.add(scale(v, 10*lane+9)), dir[i], 0xffffff, false);
+            drawLane(p.add(V.scale(v, 10*lane+9)), dir[i], 0xffffff, false);
         }
 
-        intersectionBoundary.push(p.add(scale(v, 10*approaches[i].outLanes-1)));
+        intersectionBoundary.push(p.add(V.scale(v, 10*approaches[i].outLanes-1)));
       }
 
       graphics.beginFill(0x000000);
@@ -101,16 +101,6 @@ package {
           graphics.lineTo(p[i].x, p[i].y);
         }
       }
-    }
-    
-    public static function scale(v:Point, k:Number):Point {
-      return new Point(v.x * k, v.y * k);
-    }
-    public static function left(v:Point):Point {
-      return new Point(v.y, -v.x);
-    }
-    public static function right(v:Point):Point {
-      return new Point(-v.y, v.x);
     }
   }
 }
