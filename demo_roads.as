@@ -5,19 +5,19 @@ package {
   
   public class demo_roads extends Sprite {
 
-    public var a0:Point = new Point(250, 150);
+    public var a0:Point = new Point(150, 30);
     public var a1:Point = new Point(350, 50);
-    public var a2:Point = new Point(450, 90);
+    public var a2:Point = new Point(450, 200);
     public var ak:Number = 30;
     
     public var b0:Point = Point.polar(100, Math.PI);
     public var b1:Point = Point.polar(150, Math.PI*2/3);
     public var b2:Point = Point.polar(100, Math.PI/3);
     
-    public var c0:Point = new Point(70, 10);
-    public var c1:Point = new Point(25, 80);
-    public var c2:Point = new Point(15, 120);
-    public var c3:Point = new Point(5, 160);
+    public var c0:Point = new Point(150, 30);
+    public var c1:Point = new Point(50, 20);
+    public var c2:Point = new Point(25, 120);
+    public var c3:Point = new Point(10, 180);
     public var c4:Point = new Point(30, 240);
 
     public function demo_roads() {
@@ -123,6 +123,11 @@ package {
       drawPoint(graphics, p, 0xffff00, 3, 0x000000);
       drawPoint(graphics, p1, 0xffff00, 2, 0x000000);
       drawPoint(graphics, p2, 0xffff00, 2, 0x000000);
+      graphics.lineStyle(1, 0xffff00, 0.5);
+      graphics.moveTo(p1.x, p1.y);
+      graphics.lineTo(p.x, p.y);
+      graphics.lineTo(p2.x, p2.y);
+      graphics.lineStyle();
     }
 
     public function offsetBezier(b0:Point, b1:Point, b2:Point, d0:Number, d2:Number):Array {
