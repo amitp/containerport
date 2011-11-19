@@ -2,36 +2,65 @@ package {
   import flash.geom.*;
   import flash.filters.*;
   import flash.display.*;
-  
+
+  [SWF(width=500,height=400)]
   public class demo_roads extends Sprite {
 
-    public var a0:Point = new Point(150, 30);
-    public var a1:Point = new Point(350, 50);
-    public var a2:Point = new Point(450, 200);
-    public var ak:Number = 30;
-    
+    // Compare circle drawing to bezier approximation
+    public var c:Point = new Point(180, 200);
     public var b0:Point = Point.polar(100, Math.PI);
     public var b1:Point = Point.polar(150, Math.PI*2/3);
     public var b2:Point = Point.polar(100, Math.PI/3);
-    
+
+    // Left side: bezier roads
     public var c0:Point = new Point(150, 30);
     public var c1:Point = new Point(50, 20);
     public var c2:Point = new Point(25, 120);
     public var c3:Point = new Point(10, 180);
     public var c4:Point = new Point(30, 240);
 
-    public function demo_roads() {
-      addChild(new Debug(this));
+    // Right side: arc roads
+    public var a0:Point = new Point(250, 30);
+    public var a1:Point = new Point(370, 150);
+    public var a2:Point = new Point(300, 300);
+    public var ak:Number = 70;
 
-      var c:Point = new Point(150, 100);
+    // Right side: what the same arc road would look like with bezier
+    public var overlayArc:Sprite = new Sprite();
+    public var overlayBez:Sprite = new Sprite();
+
+    // Number of lanes in various areas
+    public var lanesL0:int = 2;
+    public var lanesR0:int = 3;
+    public var lanesL1:int = 3;
+    public var lanesR1:int = 3;
+    public var lanesL2:int = 3;
+    public var lanesR2:int = 2;
+    
+    public function demo_roads() {
+      overlayBez.alpha = 0.2;
+      addChild(overlayBez);
+      addChild(overlayArc);
+      
       b0 = b0.add(c);
       b1 = b1.add(c);
       b2 = b2.add(c);
 
-      addChild(new Draggable(Model.Cartesian(Model.ref(this, 'ak')
-                                             .clamped(10, 200)
-                                             .add(300),
-                                             Model.constant(20))
+      var laneModels = ['lanesL0', 'lanesR0', 'lanesL1', 'lanesR1', 'lanesL2', 'lanesR2'];
+      for (var i:int = 0; i < laneModels.length; i++) {
+        addChild(new Draggable(Model.Cartesian(Model.ref(this, laneModels[i])
+                                               .clamped(1, 5)
+                                               .rounded()
+                                               .multiply(10)
+                                               .add(10 + 60 * Math.floor(i/2)),
+                                               Model.constant(360 + 30 * (i%2)))
+                               .callback(redraw)));
+      }
+                                             
+      addChild(new Draggable(Model.Cartesian(Model.constant(390),
+                                             Model.ref(this, 'ak')
+                                             .clamped(10, 150)
+                                             .add(20))
                              .callback(redraw)));
       
       for each (var p:Point in [c0, c1, c2, c3, c4, b0, b1, b2, a0, a1, a2]) {
@@ -68,22 +97,22 @@ package {
 
       // Draw a background
       graphics.beginFill(0xbbbb99);
-      graphics.drawRect(-1000, -1000, 2000, 2000);
+      graphics.drawRect(0, 0, 500, 400);
       graphics.endFill();
       
       // Draw a slider base for the arc size slider
       graphics.lineStyle(5, 0x777777);
-      graphics.moveTo(300, 20);
-      graphics.lineTo(500, 20);
+      graphics.moveTo(390, 30);
+      graphics.lineTo(390, 170);
       graphics.lineStyle();
 
       // Draw the Bezier curve road
-      drawTestRoadSegment(graphics, c0, c1, c2, 2, 2, 3, 2);
-      drawTestRoadSegment(graphics, c2, c3, c4, 3, 2, 3, 2);
+      drawTestRoadSegment(graphics, c0, c1, c2, lanesR1, lanesL1, lanesR1, lanesL1);
+      drawTestRoadSegment(graphics, c2, c3, c4, lanesR1, lanesL1, lanesR2, lanesL2);
 
       // Draw a circle and a Bezier curve approximating it
       graphics.lineStyle(1, 0xbb6600);
-      graphics.drawCircle(150, 100, 100);
+      graphics.drawCircle(c.x, c.y, 100);
       graphics.lineStyle(1, 0x669900);
       graphics.moveTo(b0.x, b0.y);
       graphics.lineTo(b1.x, b1.y);
@@ -107,6 +136,8 @@ package {
       graphics.lineStyle();
 
       // Draw a road that uses a circular arc to join straight segments
+      var graphics1:Graphics = overlayArc.graphics;
+      graphics1.clear();
       var a10:Point = a0.subtract(a1); a10.normalize(1);
       var a12:Point = a2.subtract(a1); a12.normalize(1);
       var p:Point = V.intersection
@@ -115,19 +146,47 @@ package {
 
       var p1:Point = V.intersection(a1, a10, p, V.left(a10));
       var p2:Point = V.intersection(a1, a12, p, V.right(a12));
-      var lanes:int = 2;
-      
-      drawTestRoadSegment(graphics, a0, Point.interpolate(a0, p1, 0.5), p1, lanes, lanes, lanes, lanes);
-      drawTestRoadSegment(graphics, p1, a1, p2, lanes, lanes, lanes, lanes);
-      drawTestRoadSegment(graphics, p2, Point.interpolate(p2, a2, 0.5), a2, lanes, lanes, lanes, lanes);
-      drawPoint(graphics, p, 0xffff00, 3, 0x000000);
-      drawPoint(graphics, p1, 0xffff00, 2, 0x000000);
-      drawPoint(graphics, p2, 0xffff00, 2, 0x000000);
-      graphics.lineStyle(1, 0xffff00, 0.5);
-      graphics.moveTo(p1.x, p1.y);
-      graphics.lineTo(p.x, p.y);
-      graphics.lineTo(p2.x, p2.y);
-      graphics.lineStyle();
+
+      drawTestRoadSegment(graphics1, a0, Point.interpolate(a0, p1, 0.5), p1, lanesL0, lanesR0, lanesL1, lanesR1);
+      drawTestRoadSegment(graphics1, p2, Point.interpolate(p2, a2, 0.5), a2, lanesL1, lanesR1, lanesL2, lanesR2);
+      drawPoint(graphics1, p, 0xffff00, 3, 0x000000);
+      drawPoint(graphics1, p1, 0xffff00, 2, 0x000000);
+      drawPoint(graphics1, p2, 0xffff00, 2, 0x000000);
+      graphics1.lineStyle(1, 0xffff00, 0.5);
+      graphics1.moveTo(p1.x, p1.y);
+      graphics1.lineTo(p.x, p.y);
+      graphics1.lineTo(p2.x, p2.y);
+      graphics1.lineStyle();
+
+      // Split arc into segments, each approximated by a bezier curve
+      var threshold:Number = Math.PI/2;
+      function drawArc(center:Point, radius:Number, angle1:Number, angle2:Number):void {
+        var angle:Number = 0.5 * (angle1 + angle2);
+        var da:Number = angle2 - angle1;
+        if (da < 0.0) da += 2 * Math.PI;
+
+        if (da > Math.PI / 4) {
+          drawArc(center, radius, angle1, angle);
+          drawArc(center, radius, angle, angle2);
+        } else {
+          var p1:Point = center.add(Point.polar(radius, angle1));
+          var p2:Point = center.add(Point.polar(radius, angle2));
+          var pc:Point = center.add(Point.polar(radius / Math.cos(da/2), angle));
+          
+          drawTestRoadSegment(graphics1, p1, pc, p2, lanesL1, lanesR1, lanesL1, lanesR1);
+        }
+      }
+
+      drawArc(p, p.subtract(p1).length,
+              Math.atan2(p1.y-p.y, p1.x-p.x),
+              Math.atan2(p2.y-p.y, p2.x-p.x));
+
+      // Show what the same road looks like with bezier curves
+      var graphics2:Graphics = overlayBez.graphics;
+      graphics2.clear();
+      drawTestRoadSegment(graphics2, a0, Point.interpolate(a0, p1, 0.5), p1, lanesL0, lanesR0, lanesL1, lanesR1);
+      drawTestRoadSegment(graphics2, p1, a1, p2, lanesL1, lanesR1, lanesL1, lanesR1);
+      drawTestRoadSegment(graphics2, p2, Point.interpolate(p2, a2, 0.5), a2, lanesL1, lanesR1, lanesL2, lanesR2);
     }
 
     public function offsetBezier(b0:Point, b1:Point, b2:Point, d0:Number, d2:Number):Array {
