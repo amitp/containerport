@@ -1,13 +1,15 @@
 package {
+  import amitp.Debug;
   import flash.display.*;
   import flash.geom.*;
-  
+
+  [SWF(width="300",height="300")]
   public class demo_intersection extends Sprite {
     public var intersection:Intersection = new Intersection();
 
     public function demo_intersection() {
-      intersection.x = 200;
-      intersection.y = 200;
+      intersection.x = 150;
+      intersection.y = 150;
       addChild(intersection);
       
       for (var i:int = 0; i < intersection.approaches.length; i++) {
@@ -17,7 +19,7 @@ package {
            .rounded()
            .clamped(0, 4)
            .multiply(10)
-           .project(Intersection.left(intersection.dir[i]))
+           .project(V.left(intersection.dir[i]))
            .offset(new Point(intersection.dir[i].x * 50,
                              intersection.dir[i].y * 50)));
         var drRight:Draggable = new Draggable
@@ -26,7 +28,7 @@ package {
            .rounded()
            .clamped(0, 4)
            .multiply(10)
-           .project(Intersection.right(intersection.dir[i]))
+           .project(V.right(intersection.dir[i]))
            .offset(new Point(intersection.dir[i].x * 70,
                              intersection.dir[i].y * 70)));
 
