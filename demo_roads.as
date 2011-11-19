@@ -3,7 +3,7 @@ package {
   import flash.filters.*;
   import flash.display.*;
 
-  [SWF(width=500,height=400)]
+  [SWF(width=400,height=400)]
   public class demo_roads extends Sprite {
 
     // Compare circle drawing to bezier approximation
@@ -97,7 +97,7 @@ package {
 
       // Draw a background
       graphics.beginFill(0xbbbb99);
-      graphics.drawRect(0, 0, 500, 400);
+      graphics.drawRect(0, 0, 400, 400);
       graphics.endFill();
       
       // Draw a slider base for the arc size slider
