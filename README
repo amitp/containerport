@@ -68,7 +68,8 @@ represent positions (on a path of length L, a vehicle can have 0 <=
 position < L).  We need to map position to world location and
 orientation. If a vehicle follows a fixed speed, its position
 variable can be incremented by V*dt, and it will properly follow the
-path from 0 to L.
+path from 0 to L. (Consider using piecewise circular curves to avoid
+needing an approximation with line segments.)
 
 Vehicles are trucks, trains, cranes, and ships. Vehicles may be linked
 together in a chain. Each car has a begin/end position on a path, as
@@ -135,3 +136,7 @@ There are also approximations of cubics using quadratics:
 
 Bezier “easing” happens to be what we need for moving along a curve at
 a constant rate. <http://www.algorithmist.net/beziereasing.html>
+
+I later found that circular arcs were a cleaner way to represent curves
+if I want to avoid dealing with approximations with short line segments.
+I wrote up notes here: <http://www.redblobgames.com/articles/curved-paths/>
